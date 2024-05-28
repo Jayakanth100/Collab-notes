@@ -13,13 +13,38 @@ export default function Canvas({sendJsonMessage,lastJsonMessage,noteId,style}){
     mouseType = lastJsonMessage?.data?.mouseType;
     prevCoordArray = lastJsonMessage?.data?.wholeArray;
 
+    function getCanvasCoordinates(event) {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+            x: (event.clientX - rect.left) * scaleX,
+            y: (event.clientY - rect.top) * scaleY
+        };
+    }
     useEffect(()=>{
         if(drawn !== undefined){
             draw(mouseType,drawn.x,drawn.y);
             console.log("Received");
         }
     },[drawn]);
+    function draw(type,x,y){
+        if(type === "mousedown"){
+            contextRef.current.beginPath();
+            contextRef.current.moveTo(x, y);
+        }
+        else if(type == "mousemove"){
+            contextRef.current.lineTo(x, y);
+            contextRef.current.stroke();
+        }
+        else{
+            contextRef.current.closePath();
+        }
+    }
+
     useEffect(()=>{
+        console.log("Im join client");
         if(prevCoordArray !== undefined){
             console.log("Hello coords: ", prevCoordArray);
             Prevdraw(prevCoordArray);
@@ -43,6 +68,7 @@ export default function Canvas({sendJsonMessage,lastJsonMessage,noteId,style}){
         }
         console.log("Thats it");;
     }
+
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -51,39 +77,9 @@ export default function Canvas({sendJsonMessage,lastJsonMessage,noteId,style}){
         canvas.height = window.innerHeight - rect.top;
         ctx.strokeStyle = "red";
         contextRef.current = ctx;
-        console.log("Hello");
+        console.log("Hello: ", prevCoordArray);
     }, []);
-    function getCanvasCoordinates(event) {
-        const canvas = canvasRef.current;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
 
-        return {
-            x: (event.clientX - rect.left) * scaleX,
-            y: (event.clientY - rect.top) * scaleY
-        };
-    }
-    function draw(type,x,y){
-        if(type === "mousedown"){
-            contextRef.current.beginPath();
-            contextRef.current.moveTo(x, y);
-        }
-        else if(type == "mousemove"){
-            contextRef.current.lineTo(x, y);
-            contextRef.current.stroke();
-        }
-        else{
-            contextRef.current.closePath();
-        }
-    }
-
-    function handleMouseDown(e){
-        const {x, y} = getCanvasCoordinates(e);
-        setSocketCoord(prev=>[...prev, {x,y}]);
-        sendMessageToWebSocket('drawcontent', 'mousedown', {x,y}, noteId.id);
-        setDrawing(true);
-    }
     function sendMessageToWebSocket(type, mouseType, {x,y}, noteId, wholeArray){
         sendJsonMessage({
             type: type,
@@ -94,23 +90,49 @@ export default function Canvas({sendJsonMessage,lastJsonMessage,noteId,style}){
         })
         console.log("message sent");
     }
+
+    useEffect(()=>{
+        if(socketCoord !== undefined && socketCoord.length){
+            let array = socketCoord;
+            let len = array.length;
+            let {x,y,type} = array[len-1];
+            console.log("The coord are: ", socketCoord);
+            console.log("The whole array :", coordArray);
+            if(type === 'mouseup'){
+                console.log("Mouseup executed");
+                sendMessageToWebSocket('drawcontent', type, {x,y}, noteId.id, coordArray );
+                setSocketCoord([]);
+            }
+            else{
+                sendMessageToWebSocket('drawcontent', type, {x,y}, noteId.id);
+            }
+
+        }
+    },[socketCoord]);
+
+    function handleMouseDown(e){
+        const {x, y} = getCanvasCoordinates(e);
+        let obj = {x: x,y: y, type: 'mousedown'};
+        setSocketCoord(prev=>[...prev, obj]);
+        setDrawing(true);
+    }
+
     function handleMouseMove(e){
         if(drawing){
             const {x, y} = getCanvasCoordinates(e);
-            setSocketCoord(prev=>[...prev, {x,y}]);
-            sendMessageToWebSocket('drawcontent', 'mousemove', {x,y}, noteId.id);
+            setSocketCoord(prev=>[...prev, {x: x,y: y, type: 'mousemove'}]);
         }
     }
 
     function handleMouseUp(e){
         const {x, y} = getCanvasCoordinates(e);
+        console.log("dei: ", x,y);
+        setSocketCoord(prev=>[...prev, {x: x,y: y, type: 'mouseup'}]);
         setCoordArray(prev=>[...prev, socketCoord]);
-        console.log("-> ",coordArray);
-        setSocketCoord([]);
-        sendMessageToWebSocket('drawcontent', 'mouseup', {x,y}, noteId.id, coordArray);
-
+        // setSocketCoord(prev=>[...prev, {x: x,y: y, type: 'mouseup'}]);
         setDrawing(false);
     }
+
     return (
         <div>
             <canvas 
