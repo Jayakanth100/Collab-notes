@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Note from "./note"
 import Login from "./Login"
+import Canvas from "./canvas"
 
 function JoinNote({clientId}){
     const [noteId, setNoteId] = useState();
@@ -56,19 +57,18 @@ export default function Home() {
                 setNoteId(data);
             })
             .catch(err=>console.log("Client: cant fetch noteId from server: ", err));
-
     }
     return (
-        <>
+        <div>
             <h1>This is home page</h1><br />
             {userName ?
                 <div>
                     <button onClick={createNote}>Create note</button><br />
-           ]       <JoinNote clientId={clientId}></JoinNote>
+                    <JoinNote clientId={clientId}></JoinNote>
 
                     {noteId && <GetTitleNewNote noteId={noteId} clientId={clientId} />}
                 </div> : <Login onLogin={setUserName} setClientId={setClientId} />
             }
-        </>
+        </div>
     );
 }

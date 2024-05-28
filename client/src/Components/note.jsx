@@ -1,13 +1,19 @@
-import {Link, useLocation, useParams} from "react-router-dom"
+import {Link, useLocation, useParams} from "react-router-dom";
+import Canvas from "./canvas";
 import useWebSocket from "react-use-websocket";
 import {useState, useEffect} from "react";
 let title = "";
 let content = ""
+let prevCoordArray = [[]];
+
 export default function Note(){
     const noteId = useParams();
     const WS_URL = `ws://127.0.0.1:5000/${noteId}`;
     const location = useLocation();
     const clientId = location.state.clientId;
+    let drawing = {x:0,y:0};
+    let mouseType = "";
+
     const {lastJsonMessage, sendJsonMessage} = useWebSocket(WS_URL,{
         onOpen: ()=>{
             console.log("Websocket connection established");
@@ -17,8 +23,8 @@ export default function Note(){
         shouldReconnect: ()=>true
     });
 
-    useEffect(()=>{
 
+    useEffect(()=>{
         title = lastJsonMessage?.data.title;
         content = lastJsonMessage?.data.content;
         console.log("The join client status :",location.state.joinClient);
@@ -41,14 +47,17 @@ export default function Note(){
                 noteId: noteId.id,
                 clientId: location.state.clientId 
             })
-
         }
+
     },[]);
+
+    drawing = lastJsonMessage?.data.drawingContent;
+    mouseType = lastJsonMessage?.data.mouseType;
 
     function handlesubmit(e){
         e.preventDefault();
     }
-    
+
     title = lastJsonMessage?.data.title;
     content = lastJsonMessage?.data.content;
 
@@ -71,30 +80,43 @@ export default function Note(){
     }
     return(
         <>
-                <form onSubmit={handlesubmit}>
-                    <label  htmlFor="notes-heading">Heading </label>
-                    <textarea
-                        value = {title}
-                        onChange = {handleHeadingChange}
-                        type="text"
-                        name="notes-heading"
-                        id="notes-heading"
-                    /><br/>
-                    <label htmlFor="notes-content">Body</label><br/>
+            <form onSubmit={handlesubmit}>
+                <label  htmlFor="notes-heading">Heading </label>
+                <textarea
+                    value = {title}
+                    onChange = {handleHeadingChange}
+                    type="text"
+                    name="notes-heading"
+                    id="notes-heading"
+                /><br/>
+                <label htmlFor="notes-content">Body</label><br/>
+                <Canvas
+                    sendJsonMessage = {sendJsonMessage}
+                    lastJsonMessage = {lastJsonMessage}
+                    noteId = {noteId}
+                    style = {
+                        {
+                            border: '2px solid blue',
+                            display: 'block',
+                        }
+                    }
+                    prevCoordArray= {prevCoordArray}
+                    width={window.innerWidth} height={window.innerHeight}
+                />
+                <textarea
+                    value = {content}
+                    onChange={handleChangeTextArea}
+                    style={{height:"400px", width:"500px"}}
+                    name="notes-content"
+                    id="notes-content"
+                    className="notes-content" >
+                </textarea><br/>
+                <button>Save</button>
+                <Link to="..">
+                    <button>Cancel</button>
+                </Link>
 
-                    <textarea
-                        value = {content}
-                        onChange={handleChangeTextArea}
-                        style={{height:"400px", width:"500px"}}
-                        name="notes-content"
-                        id="notes-content"
-                        className="notes-content" >
-                    </textarea><br/>
-                    <button>Save</button>
-                    <Link to="..">
-                        <button>Cancel</button>
-                    </Link>
-                </form>
+            </form>
         </>
     )
 }
