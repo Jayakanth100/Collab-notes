@@ -1,5 +1,5 @@
 import {Link, useLocation, useParams} from "react-router-dom";
-import Canvas from "./canvas";
+import Canvas from "../Canvas/canvas";
 import useWebSocket from "react-use-websocket";
 import {useState, useEffect} from "react";
 let title = "";
@@ -22,7 +22,6 @@ export default function Note(){
         retryOnError: true,
         shouldReconnect: ()=>true
     });
-
 
     useEffect(()=>{
         title = lastJsonMessage?.data.title;

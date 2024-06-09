@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styles from "./Login.module.css"
 export default function Login({onLogin, setClientId}){
     const [username, setUsername] = useState('');
 
@@ -24,10 +25,19 @@ export default function Login({onLogin, setClientId}){
 
     return(
         <>
-            <div>
-                <label htmlFor="username">Enter user name</label>
-                <input id="username" onInput={(e)=>setUsername(e.target.value)} btype="text"/>
-                <button onClick={()=>handleClick(onLogin)}>Login</button>
+            <div className={styles.loginContainer}>
+                <div className={styles.inputContainer}>
+                    <label htmlFor="username">Enter user name</label>
+                    <input id="username" onInput={(e)=>setUsername(e.target.value)} btype="text"/>
+                </div>
+                <div className={styles.inputContainer}>
+                    <label htmlFor="password">Enter password</label>
+                    
+                    <input type="password"/>
+                </div>
+                <div className={styles.inputContainer}>
+                    <button onClick={()=>handleClick(onLogin)}>Login</button>
+                </div>
             </div>
         </>
     )

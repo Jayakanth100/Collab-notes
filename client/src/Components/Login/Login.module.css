@@ -1,0 +1,23 @@
+:root{
+    box-sizing: border-box;
+}
+.loginContainer{
+    border: 2px solid blue;
+    width: 400px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.inputContainer{
+    display: flex;
+    flex-direction: column;
+}
+.inputContainer > input{
+    width: 200px;
+}
+
+
+

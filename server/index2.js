@@ -2,7 +2,6 @@ import http from 'http'
 import {v4 as uuidv4 }from 'uuid';
 import {WebSocket, WebSocketServer} from 'ws'
 
-
 //variables
 const port = 5000;
 let wsConnections = [];
@@ -13,8 +12,6 @@ let note = {};
 let data = {};
 let users = {};
 let user = null;
-let global = [];
-let hail = "";
 const server = http.createServer((req, res) => {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -42,7 +39,7 @@ const server = http.createServer((req, res) => {
     else if(req.url == "/noteId"){
         let requestBody = "";
         let noteId = "";
-        console.log("The post res is:", req);
+        // console.log("The post res is:", req);
         req.on('data' , chunk=>{
             requestBody += chunk.toString();
         });
@@ -52,15 +49,9 @@ const server = http.createServer((req, res) => {
                 if(clientId){
                     noteId = uuidv4();
                     clients[clientId].notes.push(noteId);//client maintains array of noteId 
-                    // notes[noteId] = {
-                    //     clientId: clientId,
-                    //     noteId: noteId,
-                    //     users: [],
-                    //     title: "",
-                    //     content: ""
-                    // }
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end(noteId);
+                    console.log("success");
                 }
                 else{
                     res.writeHead(400, {'Content-Type': 'text/plain'});
@@ -80,8 +71,9 @@ const wsServer = new WebSocketServer({server});
 const typeDef = {
     NEW_NOTE: 'userevent',
     NOTE_CONTENT_CHANGE: 'contentchange',
+    DRAW_CONTENT: 'drawcontent',
     NOTE_HEADING_CHANGE: 'headingchange',
-    JOIN_CLIENT: "joinclient",
+    JOIN_CLIENT: 'joinclient',
 }
 //server initialization
 server.listen(port, ()=>{
@@ -89,22 +81,17 @@ server.listen(port, ()=>{
 })
 //broadcast function
 function broadCastMessage(params) {
-    // console.log("Params: ", params);
+    console.log("Params: ", params);
     const data = JSON.stringify(params);
     const noteId = params.data.noteId;
-    // console.log((params.data.users[noteId]));
     
     const userArray = (params.data.users[noteId]);
-    // console.log("Array length is: ",userArray?.length);
-    // useArray.send(data);
    if(userArray){
         for(let i = 0; i <  userArray.length; i++){
-            // console.log("Array elements: ",userArray[i]);
-            // console.log(userArray[i].send);
+            // console.log("user-> ",params.data.drawingContent);
             userArray[i].send(data);
-            // console.log("success");
+            console.log("success");
         }
-        // console.log("useArray: ",typeof(userArray));
     } 
 }
 
@@ -119,10 +106,22 @@ function handleMessage(msg, connection){
         const client = clients[dataFromClient.clientId];
         const noteId = dataFromClient.noteId;
         const content = dataFromClient.content;
-        // console.log("ContentChange: ",content);
         //changing the note content in client note
         notes[noteId] = {content: content};
         json.data = {users: users,  content: notes[noteId].content, noteId: noteId};
+    }
+    else if(dataFromClient.type === typeDef.DRAW_CONTENT){
+        const noteId = dataFromClient.noteId;
+        const {x , y}= dataFromClient.coord;
+        notes[noteId] = {drawing: {x, y}, wholeArray: dataFromClient.wholeArray};
+        // console.log("The whole array is :", dataFromClient.wholeArray);
+        json.data = {
+            users: users,
+            drawingContent: notes[noteId].drawing,
+            noteId: noteId,
+            mouseType: dataFromClient.mouseType,
+            wholeArray: dataFromClient.wholeArray
+        };
     }
     else if(dataFromClient.type === typeDef.NOTE_HEADING_CHANGE){
         const noteId = dataFromClient.noteId;
@@ -131,25 +130,22 @@ function handleMessage(msg, connection){
         notes[noteId] = {title: title};
         if(users[noteId] === undefined){
             users[noteId] = [connection];
-            console.log("Owner is added");
+            // console.log("Owner is added");
         }
-        console.log("The note title: ", notes[noteId]);
+        // console.log("The note title: ", notes[noteId]);
         json.data = {users: users, title: notes[noteId].title, noteId:noteId};
     }
     else if(dataFromClient.type === typeDef.JOIN_CLIENT){
         const clientId = dataFromClient.clientId;
         const noteId = dataFromClient.noteId;
-        // console.log("This karumam is: ", (connection));
         if(users[noteId]){
             users[noteId].push(connection);
-            // console.log("new connections pushed : ", users[noteId]);
         }
         else{
             users[noteId] = [connection];
-            // console.log("This is first connection: ", users[noteId]);
         }
-        // console.log("Note from join client: ",noteId);
-        json.data = {users: users,title: notes[noteId].title, content: notes[noteId].content, noteId: noteId};
+        console.log("The wholeArry is: ", notes[noteId].wholeArray);
+        json.data = {users: users, wholeArray: notes[noteId].wholeArray,title: notes[noteId].title, content: notes[noteId].content, noteId: noteId};
     }
     broadCastMessage(json);
 }

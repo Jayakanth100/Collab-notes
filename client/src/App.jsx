@@ -1,7 +1,7 @@
 import {Routes, Route, Navigate} from 'react-router-dom'
 
-import Note from "./Components/note"
-import Home from "./Components/home"
+import Note from "./Components/Note/note"
+import Home from "./Components/Home/home"
 
 function App() {
     return (
