@@ -1,18 +1,19 @@
 import { Link } from "react-router-dom";
-import {useState} from "react";
+import { useState, useRef, useEffect } from "react";
 import Login from "../Login/Login"
 import GetTittleNewNote from "./GetTittleDesc/GetTitleNewNode"
+import styles from "./Home.module.css"
 
-function JoinNote({clientId}){
+function JoinNote({ clientId }) {
     const [noteId, setNoteId] = useState();
-    function handleChange(e){
+    function handleChange(e) {
         setNoteId(e.target.value);
     }
-    return(
+    return (
         <>
             <label htmlFor="noteId">
                 Enter note id
-            </label><br/>
+            </label><br />
             <input
                 value={noteId}
                 onChange={handleChange}
@@ -36,57 +37,73 @@ export default function Home() {
     const [clientId, setClientId] = useState('');
     const [noteId, setNoteId] = useState('');
     const [titleDescModal, setTitleDescModal] = useState(false);
-    
-    function toggleModal(){
+    const homeContainerRef = useRef(null);
+
+    useEffect(()=>{
+        if(userName){
+            document.body.style.overflow = 'auto';
+        }
+        else{
+            document.body.style.overflow = 'hidden';
+        }
+        return ()=>{
+            document.body.style.overflow = 'hidden';
+        };
+    },[userName]);
+
+    function toggleModal() {
         setTitleDescModal(!titleDescModal)
     }
 
     function createNote() {
         toggleModal();
-        const requestBody = JSON.stringify({clientId: clientId});
-        fetch("http://localhost:5000/noteId",{
+        const requestBody = JSON.stringify({ clientId: clientId });
+        fetch("http://localhost:5000/noteId", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: requestBody
         })
-            .then(res=>{
-                console.log("Just response: ",res);
+            .then(res => {
+                console.log("Just response: ", res);
                 return res.text();
             })
-            .then(data=>{
+            .then(data => {
                 console.log("The noteId is: ", data);
                 setNoteId(data);
             })
-            .catch(err=>console.log("Client: cant fetch noteId from server: ", err));
+            .catch((err) =>
+            {console.log("Client: cant fetch noteId from server: ", err)});
     }
     return (
-        <div>
-            <h1>This is home page</h1><br />
-            {userName ?
-                <div>
-                    <button
-                        onClick={createNote}>
-                        Create note
-                    </button><br/>
+        <div ref={homeContainerRef} className={styles.homeContainer}>
+            <div className={styles.homeContent}>
+                <h1>This is home page</h1><br />
+                {userName ?
+                    <div>
+                        <button
+                            onClick={createNote}>
+                            Create note
+                        </button><br />
 
-                    <JoinNote 
-                        clientId={clientId}>
-                    </JoinNote>
-                    {
-                        titleDescModal&&
-                            <GetTittleNewNote
-                                titleDescModal={titleDescModal}
-                                setTitleDescModal= {setTitleDescModal}
-                                noteId={noteId}
-                                clientId={clientId} />
-                    }
-                </div>
-                : <Login
-                    onLogin={setUserName}
-                    setClientId={setClientId} />
-            }
+                        <JoinNote
+                            clientId={clientId}>
+                        </JoinNote>
+                        {
+                            titleDescModal &&
+                                <GetTittleNewNote
+                                    titleDescModal={titleDescModal}
+                                    setTitleDescModal={setTitleDescModal}
+                                    noteId={noteId}
+                                    clientId={clientId} />
+                        }
+                    </div>
+                    : <Login
+                        onLogin={setUserName}
+                        setClientId={setClientId} />
+                }
+            </div>
         </div>
     );
 }

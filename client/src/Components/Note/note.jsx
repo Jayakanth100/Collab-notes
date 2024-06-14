@@ -1,4 +1,5 @@
 import {Link, useLocation, useParams} from "react-router-dom";
+import styles from "./Note.module.css"
 import Canvas from "../Canvas/canvas";
 import useWebSocket from "react-use-websocket";
 import {useState, useEffect} from "react";
@@ -78,7 +79,7 @@ export default function Note(){
         });
     }
     return(
-        <>
+        <div className={styles.noteContainer}>
             <form onSubmit={handlesubmit}>
                 <label  htmlFor="notes-heading">Heading </label>
                 <textarea
@@ -116,6 +117,6 @@ export default function Note(){
                 </Link>
 
             </form>
-        </>
+        </div>
     )
 }

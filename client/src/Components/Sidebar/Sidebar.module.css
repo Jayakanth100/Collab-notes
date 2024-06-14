@@ -1,0 +1,75 @@
+.sidebar{
+    margin: 0;
+    box-sizing: border-box;
+    height: 100vh;
+    background: red;
+    overflow: hidden;
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    max-width: 200px;
+    min-width: 30px;
+    transition: all 0.2s ease-out;
+}
+.notransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
+.sidebarResizer{
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 6px;
+    justify-self: end;
+    cursor: col-resize;
+    resize: horizontal;
+    display: inline-flex;
+}
+
+.sidebarResizer:hover{
+    width: 3px;
+    background: #c1c3c5b4;
+}
+.sideCloser{
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    transform: rotate(180deg);
+}
+.closerRotate{
+    transform: rotae(90deg);
+}
+.sidebarContent .closer{
+    width: 13px;
+    height: 13px;
+    margin-right: 0.5em;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+    transition: all 0.2s ease-out;
+}
+.listItem{
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    cursor: pointer;
+}
+.listItem:hover{
+    background: cyan 
+}
+.listIcons{
+    color: black;
+    flex-shrink: 0;
+}
+.sidebarContent{
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.sidebarContent ul{
+    padding-left: 0.5em;
+    list-style-type: none;
+}
+

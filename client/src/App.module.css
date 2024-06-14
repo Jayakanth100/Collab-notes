@@ -1,0 +1,11 @@
+.appContainer{
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+    gap: 0.5em;
+}
+.routerContainer{
+    flex: 1;
+    overflow-y: auto;
+}
