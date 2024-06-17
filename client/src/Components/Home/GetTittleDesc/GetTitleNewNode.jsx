@@ -1,10 +1,9 @@
 import styles from "./GetTittle.module.css"
-import Note from "../../Note/note"
 import { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 
-export default function GetTittleNewNote({titleDescModal,setTitleDescModal, noteId, clientId}) {
+export default function GetTittleNewNote({titleDescModal, setTitleDescModal, setNoteId, clientId}) {
 
     const[title, setTitle] = useState('');
     const[descValue, setDescValue] = useState('');
@@ -13,7 +12,7 @@ export default function GetTittleNewNote({titleDescModal,setTitleDescModal, note
     const maxHeight = 150;
     const maxHeightTitle = 150;
 
-
+    const navigate = useNavigate();
     useEffect(()=>{
         const textArea = textAreaRef.current;
         textArea.style.height = 'auto';
@@ -36,11 +35,51 @@ export default function GetTittleNewNote({titleDescModal,setTitleDescModal, note
         setDescValue(e.target.value);
     }
     function toggleModal(){
+        console.log("Toggled model");
         setTitleDescModal(!titleDescModal)
     }
     function handleContainerClick(event){
         event.stopPropagation();
     }
+    const getNoteId = async()=>{
+        const requestBody = JSON.stringify({ clientId: clientId });
+        console.log(requestBody);;
+        try{
+            const response = await fetch("http://localhost:5000/noteId",{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: requestBody
+            })
+            console.log(response);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.text();
+            console.log("The noteId is: ", data);
+            return data;
+        }
+        catch(error){
+            console.error("Client: can't fetch noteId from server: ", error);
+            return null;
+        }
+    }
+    const handleClick= async()=>{
+        toggleModal();
+        const fetchedNoteId = await getNoteId();
+        if(fetchedNoteId){
+            setNoteId(fetchedNoteId);
+            navigate(`/new-note/${fetchedNoteId}`,{
+                state: {
+                    title: title,
+                    joinClinet: false,
+                    noteId: fetchedNoteId,
+                    clientId: clientId
+                }
+            });
+        }
+    };
     return (
         <>
             <div className={styles.titleContainer}>
@@ -67,20 +106,7 @@ export default function GetTittleNewNote({titleDescModal,setTitleDescModal, note
                         </div>
                         <div className={styles.inputContainer}>
                             <div className={styles.buttondiv}>
-                                <Link
-                                    onClick={toggleModal}
-                                    to={`/new-note/${noteId}`}
-                                    state={
-                                        {
-                                            title: title,
-                                            joinClient: false,
-                                            noteId: noteId,
-                                            clientId: clientId
-                                        }}
-                                    element={<Note />} >
-
-                                    <button>Ok</button>
-                                </Link>
+                                    <button onClick={handleClick}>Ok</button>
                                 <button onClick={()=>setTitleDescModal(false)}>Close</button>
                             </div>
                         </div>

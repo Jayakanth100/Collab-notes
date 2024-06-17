@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import Login from "../Login/Login"
 import GetTittleNewNote from "./GetTittleDesc/GetTitleNewNode"
+import NoteCards from "../NoteCards/NoteCards"
 import styles from "./Home.module.css"
 
 function JoinNote({ clientId }) {
@@ -57,31 +58,13 @@ export default function Home() {
 
     function createNote() {
         toggleModal();
-        const requestBody = JSON.stringify({ clientId: clientId });
-        fetch("http://localhost:5000/noteId", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: requestBody
-        })
-            .then(res => {
-                console.log("Just response: ", res);
-                return res.text();
-            })
-            .then(data => {
-                console.log("The noteId is: ", data);
-                setNoteId(data);
-            })
-            .catch((err) =>
-            {console.log("Client: cant fetch noteId from server: ", err)});
     }
     return (
         <div ref={homeContainerRef} className={styles.homeContainer}>
             <div className={styles.homeContent}>
-                <h1>This is home page</h1><br />
+                <h1>All Notes</h1><br />
                 {userName ?
-                    <div>
+                    <div className={styles.newJoinNotes}>
                         <button
                             onClick={createNote}>
                             Create note
@@ -96,8 +79,10 @@ export default function Home() {
                                     titleDescModal={titleDescModal}
                                     setTitleDescModal={setTitleDescModal}
                                     noteId={noteId}
+                                    setNoteId={setNoteId}
                                     clientId={clientId} />
                         }
+                        <NoteCards></NoteCards>
                     </div>
                     : <Login
                         onLogin={setUserName}

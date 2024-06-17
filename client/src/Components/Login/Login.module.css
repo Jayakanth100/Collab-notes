@@ -31,3 +31,11 @@
 .inputContainer > input{
     width: 200px;
 }
+.loginContainer{
+    display: flex;
+    flex-direction: column;
+}
+.registerContainer{
+    display: flex;
+    flex-direction: column;
+}
