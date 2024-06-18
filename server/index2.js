@@ -1,4 +1,6 @@
 import http from 'http'
+import express from 'express'
+import cors from 'cors'
 import {v4 as uuidv4 }from 'uuid';
 import {WebSocket, WebSocketServer} from 'ws'
 
@@ -67,8 +69,8 @@ const server = http.createServer((req, res) => {
         });
     }
 });
-
-const wsServer = new WebSocketServer({server});
+console.log(server);
+const wsServer = new WebSocketServer({noServer: true});
 const typeDef = {
     NEW_NOTE: 'userevent',
     NOTE_CONTENT_CHANGE: 'contentchange',
