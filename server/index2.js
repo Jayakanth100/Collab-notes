@@ -16,15 +16,16 @@ let user = null;
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 const server = http.createServer(app);
-const wsServer = new WebSocketServer({server});
+
 app.get("/clientId",(req, res)=>{
     try{
         const clientId = uuidv4();
-        const client = {
-            notes: []
-        };
-        clients[clientId] = client;
+        client.notes = [];
+        while(!clients[clientId]){
+            clients[clientId] = client;
+        }
         res.writeHead(200, {'Content-Type': 'text/plain'});
         res.end(clientId);
     }
@@ -45,7 +46,7 @@ app.post("/noteId",(req, res)=>{
             const {clientId} = JSON.parse(requestBody);
             if(clientId){
                 noteId = uuidv4();
-                notes.push(noteId);
+                clients[clientId].notes.push(noteId);
                 res.writeHead(200, {'Content-Type': 'text/plain'});
                 res.end(noteId);
                 console.log("success");
@@ -69,8 +70,6 @@ const typeDef = {
     NOTE_HEADING_CHANGE: 'headingchange',
     JOIN_CLIENT: 'joinclient',
 }
-
-
 //broadcast function
 function broadCastMessage(params) {
     console.log("Params: ", params);
@@ -85,10 +84,9 @@ function broadCastMessage(params) {
         }
     } 
 }
-
 //handle functions 
 function handleMessage(msg, connection){
-    console.log("Hherllo");
+    console.log("hello");
     let flag = 0;
     const dataFromClient = JSON.parse(msg.toString());
     const json = {
@@ -145,12 +143,11 @@ function handleMessage(msg, connection){
 function handleDisconnect(){
     console.log("Disconnected");
 }
+app.listen(port);
 //websocket server
+const wsServer = new WebSocketServer({server});
 wsServer.on('connection', function (connection){
     console.log("server: client connected to server");
     connection.on('message',(msg)=>handleMessage(msg,connection));
     connection.on('close',()=>handleDisconnect());
 })
-app.listen(port,()=>{
-    console.log("Hey I'm new express app here I'm listening on the port 5000");
-});

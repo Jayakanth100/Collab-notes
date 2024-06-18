@@ -45,6 +45,7 @@ export default function GetTittleNewNote({titleDescModal, setTitleDescModal, set
         const requestBody = JSON.stringify({ clientId: clientId });
         console.log(requestBody);;
         try{
+            console.log("Am I working");
             const response = await fetch("http://localhost:5000/noteId",{
                 method: 'POST',
                 headers: {
@@ -52,7 +53,7 @@ export default function GetTittleNewNote({titleDescModal, setTitleDescModal, set
                 },
                 body: requestBody
             })
-            console.log(response);
+            console.log("The resposnse from server after POST request from create note: ",response);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

@@ -2,14 +2,14 @@ import {Link, useLocation, useParams} from "react-router-dom";
 import styles from "./Note.module.css"
 import Canvas from "../Canvas/canvas";
 import useWebSocket from "react-use-websocket";
-import {useState, useEffect} from "react";
+import {useEffect} from "react";
 let title = "";
 let content = ""
 let prevCoordArray = [[]];
 
 export default function Note(){
     const noteId = useParams();
-    const WS_URL = `ws://127.0.0.1:5000/${noteId.id}`;
+    const WS_URL = `ws://127.0.0.1:5000/${noteId}`;
     const location = useLocation();
     const clientId = location.state.clientId;
     let drawing = {x:0,y:0};
@@ -48,7 +48,6 @@ export default function Note(){
                 clientId: location.state.clientId 
             })
         }
-
     },[]);
 
     drawing = lastJsonMessage?.data.drawingContent;
