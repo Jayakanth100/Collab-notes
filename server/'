@@ -16,8 +16,6 @@ let user = null;
 
 const app = express();
 app.use(cors());
-const server = http.createServer(app);
-const wsServer = new WebSocketServer({server});
 app.get("/clientId",(req, res)=>{
     try{
         const clientId = uuidv4();
@@ -42,26 +40,56 @@ app.post("/noteId",(req, res)=>{
             requestBody += chunk.toString();
         });
         req.on('end', ()=>{
-            const {clientId} = JSON.parse(requestBody);
-            if(clientId){
-                noteId = uuidv4();
-                notes.push(noteId);
-                res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end(noteId);
-                console.log("success");
-            }
-            else{
-                res.writeHead(400, {'Content-Type': 'text/plain'});
-                res.end("ClientId is required");
-            }
+                const {clientId} = JSON.parse(requestBody);
+                if(clientId){
+                    noteId = uuidv4();
+                    clients[clientId].notes.push(noteId);//client maintains array of noteId 
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
+                    res.end(noteId);
+                    console.log("success");
+                }
+                else{
+                    res.writeHead(400, {'Content-Type': 'text/plain'});
+                    res.end("ClientId is required");
+                }
         });
+
     }
     catch(err){
         console.log("Error getting noteId: ");
         console.log("What is wrong with you: ",err);
         res.writeHead(400, {'Content-Type': 'text/plain'});
     }
+})
+const server = http.createServer((req, res) => {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+    res.setHeader('Access-Control-Max-Age', '2592000'); // 30 days
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    // Handle preflight request
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
+        return;
+    }
+    // Generate and send unique client ID
+    if(req.url == "/clientId"){
+        const clientId = uuidv4();
+        client.notes = [];
+        while(!clients[clientId]){
+            clients[clientId] = client;
+        }
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.end(clientId);
+    }
+    else if(req.url == "/noteId"){
+
+    }
 });
+
+const wsServer = new WebSocketServer({server});
 const typeDef = {
     NEW_NOTE: 'userevent',
     NOTE_CONTENT_CHANGE: 'contentchange',
@@ -70,6 +98,11 @@ const typeDef = {
     JOIN_CLIENT: 'joinclient',
 }
 
+//server initialization
+// server.listen(port, ()=>{
+//     console.log(`Websocket server is running on ${port}`);
+// })
+//
 
 //broadcast function
 function broadCastMessage(params) {
@@ -88,7 +121,6 @@ function broadCastMessage(params) {
 
 //handle functions 
 function handleMessage(msg, connection){
-    console.log("Hherllo");
     let flag = 0;
     const dataFromClient = JSON.parse(msg.toString());
     const json = {
@@ -98,7 +130,6 @@ function handleMessage(msg, connection){
         const client = clients[dataFromClient.clientId];
         const noteId = dataFromClient.noteId;
         const content = dataFromClient.content;
-        console.log(content);
         //changing the note content in client note
         notes[noteId] = {content: content};
         json.data = {users: users,  content: notes[noteId].content, noteId: noteId};
@@ -107,7 +138,7 @@ function handleMessage(msg, connection){
         const noteId = dataFromClient.noteId;
         const {x , y}= dataFromClient.coord;
         notes[noteId] = {drawing: {x, y}, wholeArray: dataFromClient.wholeArray};
-        console.log("The whole array is :", dataFromClient.wholeArray);
+        // console.log("The whole array is :", dataFromClient.wholeArray);
         json.data = {
             users: users,
             drawingContent: notes[noteId].drawing,
