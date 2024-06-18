@@ -12,6 +12,7 @@ let note = {};
 let data = {};
 let users = {};
 let user = null;
+
 const server = http.createServer((req, res) => {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,7 +26,6 @@ const server = http.createServer((req, res) => {
         res.end();
         return;
     }
-
     // Generate and send unique client ID
     if(req.url == "/clientId"){
         const clientId = uuidv4();
@@ -39,7 +39,6 @@ const server = http.createServer((req, res) => {
     else if(req.url == "/noteId"){
         let requestBody = "";
         let noteId = "";
-        // console.log("The post res is:", req);
         req.on('data' , chunk=>{
             requestBody += chunk.toString();
         });
@@ -61,7 +60,6 @@ const server = http.createServer((req, res) => {
             catch(err){
                 console.log("What is wrong with you: ",err);
                 res.writeHead(400, {'Content-Type': 'text/plain'});
-                
             }
         });
     }
@@ -75,18 +73,19 @@ const typeDef = {
     NOTE_HEADING_CHANGE: 'headingchange',
     JOIN_CLIENT: 'joinclient',
 }
+
 //server initialization
 server.listen(port, ()=>{
     console.log(`Websocket server is running on ${port}`);
 })
+
 //broadcast function
 function broadCastMessage(params) {
     console.log("Params: ", params);
     const data = JSON.stringify(params);
     const noteId = params.data.noteId;
-    
     const userArray = (params.data.users[noteId]);
-   if(userArray){
+    if(userArray){
         for(let i = 0; i <  userArray.length; i++){
             // console.log("user-> ",params.data.drawingContent);
             userArray[i].send(data);
