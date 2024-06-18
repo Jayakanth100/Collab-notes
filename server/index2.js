@@ -27,6 +27,7 @@ const server = http.createServer((req, res) => {
     }
 
     // Generate and send unique client ID
+
     if(req.url == "/clientId"){
         const clientId = uuidv4();
         client.notes = [];
