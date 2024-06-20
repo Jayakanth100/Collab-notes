@@ -46,7 +46,7 @@ export default function GetTittleNewNote({titleDescModal, setTitleDescModal, set
         console.log(requestBody);;
         try{
             console.log("Am I working");
-            const response = await fetch("http://localhost:5000/noteId",{
+            const response = await fetch("http://localhost:5000/api/noteId",{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

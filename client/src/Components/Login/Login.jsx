@@ -13,7 +13,7 @@ export default function Login({onLogin, setClientId}){
         onLogin && onLogin(username);
         console.log("In login the username is: ",username);
 
-        fetch('http://localhost:5000/clientId',{
+        fetch('http://localhost:5000/api/clientId',{
             method: 'GET',
         })
             .then(res=>{
