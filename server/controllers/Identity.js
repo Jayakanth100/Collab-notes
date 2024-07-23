@@ -1,49 +1,38 @@
 import {v4 as uuidv4 }from 'uuid';
+import bcrypt from "bcrypt";
+import pool from "../db/db.js";
 
+async function insertUser(con , username, email, password){
+    const id = uuidv4();
+    const query = "INSERT INTO users(clientId, username, email, password) VALUES (?, ?, ?, ?);"
+    let queryStatus = await con.query(query,[id, username, email, password]);
+}
 const idController = {
-
-    getClientId : (req, res)=>{
+    register: async(req, res)=>{
+        const username = req.body.username;
+        const email = req.body.email;
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        let con;
         try{
-            const clientId = uuidv4();
-            client.notes = [];
-            while(!clients[clientId]){
-                clients[clientId] = client;
-            }
-            res.writeHead(200, {'Content-Type': 'text/plain'});
-            res.end(clientId);
-        }
-        catch(err){
-            console.log("Error while fetching clientId: ", err);
-        }
-    },
-
-    getNoteId : (req, res)=>{
-    try{
-        let requestBody = "";
-        let noteId = "";
-        req.on('data' , chunk=>{
-            requestBody += chunk.toString();
-        });
-        req.on('end', ()=>{
-            const {clientId} = JSON.parse(requestBody);
-            if(clientId){
-                noteId = uuidv4();
-                clients[clientId].notes.push(noteId);//client maintains array of noteId 
-                res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end(noteId);
-                console.log("success");
+            con = await pool.getConnection();
+            //seraching for existing account
+            const query = "SELECT * FROM users WHERE email LIKE (?);"
+            const row = await con.query(query,[email]);
+            if(row.length > 0){
+                console.log("already exist");
+                res.status(200).json({exists:'true'});
             }
             else{
-                res.writeHead(400, {'Content-Type': 'text/plain'});
-                res.end("ClientId is required");
+                res.status(201).json({exists:'false'});
+                await insertUser(con, username, email, hashedPassword);
             }
-        });
-    }
-    catch(err){
-        console.log("Error while fetching nodeId: ", err);
-res.writeHead(400, {'Content-Type': 'text/plain'});
-    }
+         }
+        catch(err){
+            console.log(err);
+            res.redirect("/api/register");
+            // res.writeHead(400, {'Content-Type': 'text/plain'});
+        }
 
-}
+    }
 }
 export default idController;

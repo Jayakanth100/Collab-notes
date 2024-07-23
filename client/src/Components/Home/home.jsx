@@ -1,9 +1,8 @@
-import { Link } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
-import Login from "../Login/Login"
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect, useContext } from "react";
 import GetTittleNewNote from "./GetTittleDesc/GetTitleNewNode"
-import NoteCards from "../NoteCards/NoteCards"
 import styles from "./Home.module.css"
+import {UserContext} from "../GlobalProvider/UserProvider"
 
 function JoinNote({ clientId }) {
     const [noteId, setNoteId] = useState();
@@ -30,15 +29,13 @@ function JoinNote({ clientId }) {
                 <button>Join</button>
             </Link>
         </>
-    )
-}
-
+    ) }
 export default function Home() {
-    const [userName, setUserName] = useState('');
-    const [clientId, setClientId] = useState('');
+    const {userName, clientId} = useContext(UserContext);
     const [noteId, setNoteId] = useState('');
     const [titleDescModal, setTitleDescModal] = useState(false);
     const homeContainerRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(()=>{
         if(userName){
@@ -55,9 +52,11 @@ export default function Home() {
     function toggleModal() {
         setTitleDescModal(!titleDescModal)
     }
-
     function createNote() {
         toggleModal();
+    }
+    function redirectLogin(){
+        navigate("\login");
     }
     return (
         <div ref={homeContainerRef} className={styles.homeContainer}>
@@ -82,11 +81,9 @@ export default function Home() {
                                     setNoteId={setNoteId}
                                     clientId={clientId} />
                         }
-                        <NoteCards></NoteCards>
                     </div>
-                    : <Login
-                        onLogin={setUserName}
-                        setClientId={setClientId} />
+                    :
+                    <button type="button" onClick={redirectLogin}>Login</button>
                 }
             </div>
         </div>

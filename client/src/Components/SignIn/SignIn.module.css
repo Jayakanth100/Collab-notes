@@ -1,0 +1,47 @@
+:root{
+    box-sizing: border-box;
+}
+.loginContainer .overlay{
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+}
+.overlay{
+    background: rgba(49,49,49,0.8);
+}
+.inputContainers{
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    border: 2px solid blue;
+    gap: 5px;
+
+    padding: 20px;
+}
+.inputContainer{
+    display: flex;
+    flex-direction: column;
+}
+.inputContainer > input{
+    width: 200px;
+}
+.loginContainer{
+    display: flex;
+    flex-direction: column;
+}
+.registerContainer{
+    display: flex;
+    flex-direction: column;
+}
+.prompt{
+    color: red;
+    display: none;
+}
+

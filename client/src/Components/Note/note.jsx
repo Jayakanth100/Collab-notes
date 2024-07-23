@@ -9,11 +9,12 @@ let prevCoordArray = [[]];
 
 export default function Note(){
     const noteId = useParams();
-    const WS_URL = `ws://127.0.0.1:5000/${noteId}`;
+    const WS_URL = `ws://127.0.0.1:3000/${noteId}`;
     const location = useLocation();
     const clientId = location.state.clientId;
     let drawing = {x:0,y:0};
     let mouseType = "";
+    let joinClient = false;
 
     const {lastJsonMessage, sendJsonMessage} = useWebSocket(WS_URL,{
         onOpen: ()=>{
@@ -25,19 +26,14 @@ export default function Note(){
     });
 
     useEffect(()=>{
-        title = lastJsonMessage?.data.title;
-        content = lastJsonMessage?.data.content;
-        console.log("The join client status :",location.state.joinClient);
-        console.log("the clientid : ", location.state.clientId);
-        console.log("The noteId: ", noteId);
-        console.log("The noteId: ", noteId.id);
-
+        title = lastJsonMessage?.title;
+        content = lastJsonMessage?.content;
         if(location.state.joinClient){
-            console.log("Im not a owner");
+            joinClient = true;
             sendJsonMessage({
                 type: 'joinclient',
                 noteId: noteId.id,
-                clientId: clientId
+                clientId: location.state.clientId 
             })
         }
         else if(!location.state.joinClient){
@@ -45,10 +41,14 @@ export default function Note(){
                 type: 'headingchange',
                 title: location.state.title,
                 noteId: noteId.id,
-                clientId: location.state.clientId 
+                clientId: clientId
             })
         }
     },[]);
+    useEffect(()=>{
+        console.log("Last json message: ",lastJsonMessage);
+    },[lastJsonMessage]);
+
 
     drawing = lastJsonMessage?.data.drawingContent;
     mouseType = lastJsonMessage?.data.mouseType;
@@ -60,21 +60,20 @@ export default function Note(){
     title = lastJsonMessage?.data.title;
     content = lastJsonMessage?.data.content;
 
-    function handleHeadingChange(e){
-        console.log("Message from server: ",lastJsonMessage);
-        // console.log(e.target.value);
+    function handleHeadingChange(e) {
         sendJsonMessage({
             type: 'headingchange',
             title: e.target.value,
-            noteId: noteId.id
+            noteId: noteId.id,
+            clientId: clientId
         });
     }
     function handleChangeTextArea(e){
-        console.log(e.target.value);
         sendJsonMessage({
             type: 'contentchange',
             content: e.target.value,
-            noteId: noteId.id
+            noteId: noteId.id,
+            clientId: clientId
         });
     }
     return(
@@ -92,7 +91,7 @@ export default function Note(){
                 <Canvas
                     sendJsonMessage = {sendJsonMessage}
                     lastJsonMessage = {lastJsonMessage}
-                    noteId = {noteId}
+                    noteId = {noteId.id}
                     style = {
                         {
                             border: '2px solid blue',
@@ -101,6 +100,7 @@ export default function Note(){
                     }
                     prevCoordArray= {prevCoordArray}
                     width={window.innerWidth} height={window.innerHeight}
+                    joinClient = {joinClient}
                 />
                 <textarea
                     value = {content}

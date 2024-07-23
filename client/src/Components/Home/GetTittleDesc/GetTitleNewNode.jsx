@@ -2,7 +2,6 @@ import styles from "./GetTittle.module.css"
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 
-
 export default function GetTittleNewNote({titleDescModal, setTitleDescModal, setNoteId, clientId}) {
 
     const[title, setTitle] = useState('');
@@ -42,11 +41,12 @@ export default function GetTittleNewNote({titleDescModal, setTitleDescModal, set
         event.stopPropagation();
     }
     const getNoteId = async()=>{
-        const requestBody = JSON.stringify({ clientId: clientId });
-        console.log(requestBody);;
+        const requestBody = JSON.stringify({ clientId: clientId, title: title, description: descValue });
+        console.log(requestBody);
         try{
-            console.log("Am I working");
-            const response = await fetch("http://localhost:5000/api/noteId",{
+            console.log("Am I working: ", clientId);
+            const response =
+                await fetch("http://localhost:3000/api/noteId",{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -57,7 +57,7 @@ export default function GetTittleNewNote({titleDescModal, setTitleDescModal, set
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            const data = await response.text();
+            const data = await response.json();
             console.log("The noteId is: ", data);
             return data;
         }
