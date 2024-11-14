@@ -9,7 +9,7 @@ let prevCoordArray = [[]];
 
 export default function Note(){
     const noteId = useParams();
-    const WS_URL = `ws://127.0.0.1:5000/${noteId}`;
+    const WS_URL = `ws://127.0.0.1:5000/${noteId.id}`;
     const location = useLocation();
     const clientId = location.state.clientId;
     let drawing = {x:0,y:0};
@@ -23,6 +23,7 @@ export default function Note(){
         retryOnError: true,
         shouldReconnect: ()=>true
     });
+
 
     useEffect(()=>{
         title = lastJsonMessage?.data.title;
@@ -48,7 +49,6 @@ export default function Note(){
                 clientId: location.state.clientId 
             })
         }
-
     },[]);
 
     drawing = lastJsonMessage?.data.drawingContent;
